@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -20,7 +21,6 @@ func main() {
 
 	numMap := make(map[int]map[int]bool)
 	pageUpdates := [][]int{}
-	invalidPageUpdates := [][]int{}
 	for sc.Scan() {
 		line := sc.Text()
 
@@ -39,28 +39,33 @@ func main() {
 	}
 
 	middlePageSum := 0
+	invalidMiddlePageSum := 0
 	for _, pageUpdate := range pageUpdates {
 		isValid := true
 		for i, page := range pageUpdate {
 			for j := i + 1; j < len(pageUpdate); j++ {
 				if !numMap[page][pageUpdate[j]] && numMap[pageUpdate[j]][page] {
-					fmt.Println(pageUpdate, page, pageUpdate[j])
 					isValid = false
-					break
 				}
-			}
-			if !isValid {
-				invalidPageUpdates = append(invalidPageUpdates, pageUpdate)
-				break
 			}
 		}
 
 		if isValid {
 			middlePageSum += pageUpdate[len(pageUpdate)/2]
+		} else {
+			slices.SortFunc(pageUpdate, func(i, j int) int {
+				if !numMap[i][j] {
+					return 1
+				}
+				return -1
+			})
+
+			invalidMiddlePageSum += pageUpdate[len(pageUpdate)/2]
 		}
 	}
 
 	fmt.Println(middlePageSum)
+	fmt.Println(invalidMiddlePageSum)
 }
 
 func parseOrder(line string) (num1, num2 int) {
